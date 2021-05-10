@@ -1,3 +1,3 @@
-module github.com/raulcodes/spotify-web-api/v2
+module github.com/raulcodes/spotify-web-api
 
 go 1.14

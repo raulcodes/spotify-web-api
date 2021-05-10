@@ -3,7 +3,7 @@ package spotify_web_api_test
 import (
 	"testing"
 
-	spotify "github.com/raulcodes/spotify-web-api/v2"
+	spotify "github.com/raulcodes/spotify-web-api"
 )
 
 func TestSetToken(t *testing.T) {
