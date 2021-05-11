@@ -35,7 +35,7 @@ func NewClient(clientId, clientKey string) Client {
 }
 
 // SetToken sets the Token field of a Client instance
-func (c Client) SetToken(token string) {
+func (c *Client) SetToken(token string) {
 	c.Token = token
 }
 
