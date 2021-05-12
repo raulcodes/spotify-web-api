@@ -1,6 +1,10 @@
 package spotify_web_api
 
-import "time"
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+)
 
 // TokenResponse represents a response from the `api/token` endpoint
 type TokenResponse struct {
@@ -10,20 +14,20 @@ type TokenResponse struct {
 }
 
 type PlaylistObj struct {
-	Collaborative bool
-	Description   string
-	ExternalURLS  ExternalURLObj
-	Followers     FollowersObj
-	Href          string
-	ID            string
-	Images        []ImageObj
-	Name          string
-	Owner         PublicUserObj
-	Public        bool
-	SnapshotID    string
-	Tracks        []PlaylistTrackObj
-	Type          string
-	URI           string
+	Collaborative bool           `json:"collaborative"`
+	Description   string         `json:"description"`
+	ExternalURLS  ExternalURLObj `json:"external_urls"`
+	Followers     FollowersObj   `json:"followers"`
+	Href          string         `json:"href"`
+	ID            string         `json:"id"`
+	Images        []ImageObj     `json:"images"`
+	Name          string         `json:"name"`
+	Owner         PublicUserObj  `json:"owner"`
+	Public        bool           `json:"public"`
+	SnapshotID    string         `json:"snapshot_id"`
+	Tracks        TracksObj      `json:"tracks"`
+	Type          string         `json:"type"`
+	URI           string         `json:"uri"`
 }
 
 type ExternalURLObj struct {
@@ -52,11 +56,46 @@ type PublicUserObj struct {
 	URI          string         `json:"uri"`
 }
 
+type TracksObj struct {
+	Href  string             `json:"href"`
+	Items []PlaylistTrackObj `json:"items"`
+	Total int                `json:"total"`
+}
+
 type PlaylistTrackObj struct {
 	AddedAt time.Time      `json:"added_at"`
 	AddedBy PublicUserObj  `json:"added_by"`
 	IsLocal bool           `json:"is_local"`
 	Track   TrackOrEpisode `json:"track"`
+}
+
+type TrackOrEpisode struct {
+	Track   *TrackObj
+	Episode *EpisodeObj
+}
+
+func (t *TrackOrEpisode) UnmarshalJSON(data []byte) error {
+	var entity map[string]*json.RawMessage
+
+	if err := json.Unmarshal(data, &entity); err != nil { 
+		panic(err)     
+	}
+	
+	var entityType string
+	if err := json.Unmarshal(*entity["type"], &entityType); err != nil { 
+		panic(err)     
+	}  
+	
+	switch entityType {
+	case "track":
+			t.Track = &TrackObj{}
+			return json.Unmarshal(data, t.Track)
+	case "episode":
+			t.Episode = &EpisodeObj{}
+			return json.Unmarshal(data, t.Episode)
+	default:
+			return fmt.Errorf("unrecognized type value %q", entityType)
+	}
 }
 
 type TrackObj struct {
@@ -81,12 +120,6 @@ type TrackObj struct {
 	URI              string              `json:"uri"`
 }
 
-type TrackOrEpisode interface {
-	IsTrack()
-}
-
-func (TrackObj) IsTrack() {}
-
 type EpisodeObj struct {
 	AudioPreviewURL      string                `json:"audio_preview_url"`
 	Description          string                `json:"description"`
@@ -110,8 +143,6 @@ type EpisodeObj struct {
 	Type                 string                `json:"type"`
 	URI                  string                `json:"uri"`
 }
-
-func (EpisodeObj) IsTrack() {}
 
 type EpisodeRestrictionObj struct {
 	Reason string `json:"reason"`

@@ -90,14 +90,15 @@ func (c Client) GetPlaylist(id string) (PlaylistObj, error) {
 		return PlaylistObj{}, fmt.Errorf("GetPlaylist: Missing token")
 	}
 
-	url := fmt.Sprintf("https://accounts.spotify.com/v1/playlists/%s", id)
+	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s", id)
 
-	req, err := http.NewRequest(http.MethodPost, url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return PlaylistObj{}, err
 	}
 
-	req.Header.Set("Authorization", c.Token)
+	bearer := fmt.Sprintf("Bearer %s", c.Token)
+	req.Header.Set("Authorization", bearer)
 
 	client := &http.Client{}
 	res, err := client.Do(req)
