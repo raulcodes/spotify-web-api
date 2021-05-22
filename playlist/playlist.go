@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/raulcodes/spotify-web-api/types"
+	"github.com/raulcodes/spotifyWebAPI/types"
 )
 
 type Client struct {
@@ -48,7 +48,7 @@ func (c Client) parsePlaylistResponse(res *http.Response) (types.PlaylistObj, er
 
 	err := json.Unmarshal(body, &playlistObj)
 	if err != nil {
-		return types.PlaylistObj{}, fmt.Errorf("parsePlaylistResponse: Error encountered while trying to unmarshal json to PlaylistObj")
+		return types.PlaylistObj{}, fmt.Errorf("parsePlaylistResponse: Error encountered while trying to unmarshal response to PlaylistObj")
 	}
 
 	return playlistObj, nil

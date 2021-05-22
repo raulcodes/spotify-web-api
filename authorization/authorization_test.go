@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/raulcodes/spotify-web-api/authorization"
-	"github.com/raulcodes/spotify-web-api/types"
+	"github.com/raulcodes/spotifyWebAPI/authorization"
+	"github.com/raulcodes/spotifyWebAPI/types"
 
 	"github.com/stretchr/testify/assert"
 )

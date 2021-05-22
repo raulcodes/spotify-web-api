@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/raulcodes/spotify-web-api/types"
+	"github.com/raulcodes/spotifyWebAPI/types"
 )
 
 // Client contains credentials for the Spotify Web API
