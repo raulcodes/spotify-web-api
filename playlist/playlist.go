@@ -48,7 +48,7 @@ func (c Client) parsePlaylistResponse(res *http.Response) (types.PlaylistObj, er
 
 	err := json.Unmarshal(body, &playlistObj)
 	if err != nil {
-		return types.PlaylistObj{}, fmt.Errorf("parsePlaylistResponse: %s", err)
+		return types.PlaylistObj{}, fmt.Errorf("parsePlaylistResponse: Error encountered while trying to unmarshal json to PlaylistObj")
 	}
 
 	return playlistObj, nil

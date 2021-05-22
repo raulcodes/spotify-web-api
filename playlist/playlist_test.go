@@ -2,9 +2,9 @@ package playlist_test
 
 import (
 	"fmt"
-	"testing"
 	"net/http"
 	"net/http/httptest"
+	"testing"
 
 	"github.com/raulcodes/spotify-web-api/playlist"
 
@@ -25,6 +25,16 @@ var testCases = []struct{
 			return testServer
 		},
 		nil,
+	},
+	{
+		"GetPlaylist: invalid response",
+		func() *httptest.Server {
+			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprintln(w, "invalid response")
+			}))
+			return testServer
+		},
+		fmt.Errorf("parsePlaylistResponse: Error encountered while trying to unmarshal response to PlaylistObj"),
 	},
 }
 
