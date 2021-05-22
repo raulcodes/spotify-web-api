@@ -1,4 +1,4 @@
-package spotify_web_api
+package types
 
 import (
 	"encoding/json"
@@ -6,13 +6,15 @@ import (
 	"time"
 )
 
-// TokenResponse represents a response from the `api/token` endpoint
+// TokenResponse models a response from the `api/token` endpoint
 type TokenResponse struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`
 	ExpiresIn   int    `json:"expires_in"`
 }
 
+// PlaylistObj models the top-level Playlist Object returned by the `v1/playlists/{id}` endpoint
+// ref: https://developer.spotify.com/documentation/web-api/reference/#object-playlistobject
 type PlaylistObj struct {
 	Collaborative bool           `json:"collaborative"`
 	Description   string         `json:"description"`
@@ -30,6 +32,8 @@ type PlaylistObj struct {
 	URI           string         `json:"uri"`
 }
 
+// ExternalURLObj models external urls
+// ref: https://developer.spotify.com/documentation/web-api/reference/#object-externalurlobject
 type ExternalURLObj struct {
 	Spotify string `json:"spotify"`
 }
@@ -74,6 +78,7 @@ type TrackOrEpisode struct {
 	Episode *EpisodeObj
 }
 
+// UnmarshalJSON is a custom unmarshaller than handles the type sum of `TrackOrEpisode`
 func (t *TrackOrEpisode) UnmarshalJSON(data []byte) error {
 	var entity map[string]*json.RawMessage
 

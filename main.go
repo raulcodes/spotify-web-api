@@ -1,4 +1,4 @@
-package spotify_web_api
+package main
 
 import (
 	"encoding/base64"
@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/raulcodes/spotify-web-api/types"
 )
 
 // Client contains credentials for the Spotify Web API
@@ -20,7 +22,7 @@ type Client struct {
 // ClientImpl implements functions for authenticating against and interacting with the Spotify Web API
 type ClientImpl interface {
 	SetToken(string)
-	AccessToken() (TokenResponse, error)
+	AccessToken() (types.TokenResponse, error)
 
 	GetPlaylist(id string)
 }
@@ -40,13 +42,13 @@ func (c *Client) SetToken(token string) {
 }
 
 // AccessToken retrieves an access token from the `api/token` endpoint
-func (c Client) AccessToken() (TokenResponse, error) {
+func (c Client) AccessToken() (types.TokenResponse, error) {
 	body := url.Values{}
 	body.Set("grant_type", "client_credentials")
 
 	req, err := http.NewRequest(http.MethodPost, "https://accounts.spotify.com/api/token", strings.NewReader(body.Encode()))
 	if err != nil {
-		return TokenResponse{}, err
+		return types.TokenResponse{}, err
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -55,12 +57,12 @@ func (c Client) AccessToken() (TokenResponse, error) {
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
-		return TokenResponse{}, err
+		return types.TokenResponse{}, err
 	}
 
 	tokenResponse, err := c.parseTokenResponse(res)
 	if err != nil {
-		return TokenResponse{}, err
+		return types.TokenResponse{}, err
 	}
 
 	return tokenResponse, nil
@@ -73,28 +75,54 @@ func (c Client) encodeAuth() string {
 	return fmt.Sprintf("Basic %s", encodedStr)
 }
 
-func (c Client) parseTokenResponse(res *http.Response) (TokenResponse, error) {
+func (c Client) parseTokenResponse(res *http.Response) (types.TokenResponse, error) {
 	body, _ := ioutil.ReadAll(res.Body)
-	accessTokenRes := TokenResponse{}
+	accessTokenRes := types.TokenResponse{}
 
 	err := json.Unmarshal(body, &accessTokenRes)
 	if err != nil {
-		return TokenResponse{}, err
+		return types.TokenResponse{}, err
 	}
 
 	return accessTokenRes, nil
 }
 
-func (c Client) GetPlaylist(id string) (PlaylistObj, error) {
-	if c.Token == "" {
-		return PlaylistObj{}, fmt.Errorf("GetPlaylist: Missing token")
-	}
-
+func (c Client) GetPlaylist(id string) (types.PlaylistObj, error) {
 	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s", id)
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	res, err := c.performRequest(http.MethodGet, url)
 	if err != nil {
-		return PlaylistObj{}, err
+		return types.PlaylistObj{}, err
+	}
+
+	playlistObj, err := c.parsePlaylistResponse(res)
+	if err != nil {
+		return types.PlaylistObj{}, err
+	}
+
+	return playlistObj, nil
+}
+
+func (c Client) parsePlaylistResponse(res *http.Response) (types.PlaylistObj, error) {
+	body, _ := ioutil.ReadAll(res.Body)
+	playlistObj := types.PlaylistObj{}
+
+	err := json.Unmarshal(body, &playlistObj)
+	if err != nil {
+		return types.PlaylistObj{}, err
+	}
+
+	return playlistObj, nil
+}
+
+func (c Client) performRequest(method, url string) (*http.Response, error) {
+	if c.Token == "" {
+		return nil, fmt.Errorf("performRequest: Missing token")
+	}
+
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return nil, err
 	}
 
 	bearer := fmt.Sprintf("Bearer %s", c.Token)
@@ -103,25 +131,8 @@ func (c Client) GetPlaylist(id string) (PlaylistObj, error) {
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
-		return PlaylistObj{}, err
+		return nil, err
 	}
 
-	playlistObj, err := c.parsePlaylistResponse(res)
-	if err != nil {
-		return PlaylistObj{}, err
-	}
-
-	return playlistObj, nil
-}
-
-func (c Client) parsePlaylistResponse(res *http.Response) (PlaylistObj, error) {
-	body, _ := ioutil.ReadAll(res.Body)
-	playlistObj := PlaylistObj{}
-
-	err := json.Unmarshal(body, &playlistObj)
-	if err != nil {
-		return PlaylistObj{}, err
-	}
-
-	return playlistObj, nil
+	return res, nil
 }
